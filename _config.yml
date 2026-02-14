@@ -12,3 +12,5 @@ kramdown:
 
 plugins:
   - jemoji
+
+include: [.editorconfig]
