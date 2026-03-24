@@ -1,5 +1,7 @@
 ## Skills
 
-Personal skills for resolving some technical requirements:
+### Internal
 
 - [**IE Compatibility**](./ie-compatibility-skill/SKILL.md)
+
+### External
