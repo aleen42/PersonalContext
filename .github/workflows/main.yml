@@ -1,0 +1,28 @@
+name: Build the book
+on:
+  push:
+    branches:
+      - main
+concurrency: building
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '24'
+      - name: Build
+        run: |
+          git clone --depth=1 --branch=main https://github.com/aleen42/PersonalContext.git gh-pages
+          cd gh-pages
+          npm i --no-save --no-audit
+          sed -i '/^skills/d' .gitignore
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          single-commit: true
+          branch: gh-pages
+          folder: gh-pages
