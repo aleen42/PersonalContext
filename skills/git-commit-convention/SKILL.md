@@ -6,12 +6,13 @@ description: Enforces conventional commit message format for consistent and read
 # Git Commit Convention Skill
 
 This skill provides guidelines for writing consistent and meaningful Git commit messages following the Conventional Commits
-specification.
+specification with enhanced professional terminology formatting.
 
 ## Overview
 
 Conventional Commits is a specification for adding human and machine readable meaning to commit messages. It makes it easier to
-write automated tools on top of the commit history.
+write automated tools on top of the commit history. This enhanced version emphasizes proper formatting of technical terms using
+backticks.
 
 ## Commit Message Format
 
@@ -98,21 +99,22 @@ The scope should be the name of the module/component affected. Examples:
 - Don't capitalize the first letter
 - No dot (.) at the end
 - Keep it under 72 characters
+- **Wrap technical terms with backticks**: Function names, class names, variables, methods, etc.
 
 **Good Examples:**
 
-- `feat(auth): add OAuth2 login support`
-- `fix(api): resolve null pointer exception in user service`
-- `docs(readme): update installation instructions`
-- `feat(auth): add OAuth2 login support #123`
-- `fix(api): resolve null pointer in user service #456 !789`
-- `chore(deps): update webpack to v5 #100 !200`
+- ```feat(auth): add `OAuth2` login support```
+- ```fix(api): resolve `null` pointer exception in `UserService```
+- ```docs(readme): update `install()` instructions```
+- ```feat(auth): add `OAuth2` login support #123```
+- ```fix(api): resolve `null` pointer in `userService` #456 !789```
+- ```chore(deps): update `webpack` to v5 #100 !200```
 
 **Bad Examples:**
 
-- `Added new feature` (missing type, capitalized)
+- `feat(auth): add OAuth2 login support` (technical term not wrapped)
+- `fix(api): resolve null pointer exception` (keywords not wrapped)
 - `feat: Added OAuth2 login support.` (capitalized, ends with dot)
-- `fix(api): Fixed the bug.` (too vague, capitalized, ends with dot)
 
 #### Issue Reference (Optional)
 
@@ -133,17 +135,25 @@ Add Merge Request or Pull Request ID prefixed with `!` to link the commit:
 - Use the imperative, present tense
 - Should include the motivation for the change and contrast with previous behavior
 - Separate from subject with a blank line
+- **Wrap all technical terms with backticks**: Function names, class names, variables, methods, file names, commands, etc.
+- **Use backticks for code snippets**: Inline code examples should be wrapped
+- **Be specific about technical changes**: Mention exact function names, classes, and modules
 
 **Example:**
 
 ```
-feat(auth): add OAuth2 login support
+feat(auth): add `OAuth2` login support
 
-Implement OAuth2 authentication flow to allow users to sign in with
-third-party providers. This replaces the previous basic auth mechanism
+Implement `OAuth2` authentication flow to allow users to sign in with
+third-party providers. This replaces the previous `BasicAuth` mechanism
 which was less secure and harder to maintain.
 
-The implementation supports Google, GitHub, and Microsoft providers.
+The implementation supports `Google`, `GitHub`, and `Microsoft` providers.
+New functions added:
+
+- `authenticateWithProvider()`
+- `handleCallback()`
+- `getUserInfo()`
 ```
 
 ### Footer (Optional)
@@ -156,46 +166,93 @@ The footer can contain:
 **Breaking Change Example:**
 
 ```
-feat(api): redesign user endpoint response format
+refactor(core): rename configuration options #200 !300
 
-BREAKING CHANGE: The user API endpoint now returns a different JSON
-structure. The `userId` field has been renamed to `id`, and the
-`userName` field has been renamed to `username`.
+BREAKING CHANGE: Configuration options have been renamed for clarity:
 
-Closes #789
+- `maxItems` is now `maxLimit`
+- `showAll` is now `displayAll`
+
+Update your configuration files accordingly.
+```
+
+## Professional Terminology Formatting Guide
+
+### When to Use Backticks
+
+Wrap the following technical elements with single backticks:
+
+1. **Function/Method Names**: `calculateTotal()`, `getUserData`
+2. **Class/Component Names**: `UserService`, `ButtonComponent`
+3. **Variable/Property Names**: `userId`, `isLoading`
+4. **File/Path Names**: `package.json`, `/src/utils/helpers.js`
+5. **Commands/Tools**: `npm install`, `git commit`
+6. **Keywords**: `null`, `undefined`, `this`, `async`, `await`
+7. **Configuration Options**: `maxRetries`, `timeout`
+8. **HTTP Methods**: `GET`, `POST`, `PUT`, `DELETE`
+9. **Status Codes**: `200`, `404`, `500`
+10. **Library/Framework Names**: `React`, `Vue`, `Express`
+
+### Examples of Proper Formatting
+
+**Before (Poor):**
+```
+fix(api): handle undefined values in user service
+
+Fixed a bug where the application would crash when user data was missing.
+The getUserData function now properly validates responses and returns
+default values instead of crashing.
+```
+
+**After (Enhanced):**
+```
+fix(api): handle `undefined` values in `UserService`
+
+Fixed a bug where the application would crash when user data was missing.
+The `getUserData()` function now properly validates responses and returns
+default values instead of crashing.
+
+Added null checks for `userId` and `email` properties.
 ```
 
 ## Complete Examples
 
-### Simple Commit
+### Simple Commit with Technical Terms
 
 ```
-fix(button): resolve click event not firing on iOS
+fix(button): resolve `click` event not firing on `iOS`
 ```
 
-### Commit with Issue Reference
+### Commit with Issue Reference and Technical Terms
 
 ```
-feat(auth): add OAuth2 login support #123
+feat(auth): add `OAuth2` login support #123
 ```
 
 ### Commit with Issue and MR/PR Reference
 
 ```
-fix(api): resolve null pointer in user service #456 !789
+fix(api): resolve `null` pointer in `UserService` #456 !789
 ```
 
-### Commit with Body
+### Commit with Body and Extensive Technical Formatting
 
 ```
-feat(dropdown): add keyboard navigation support #101
+feat(dropdown): add `keyboard` navigation support #101
 
 Users can now navigate dropdown options using arrow keys and select
-with Enter. This improves accessibility and user experience for
+with `Enter`. This improves accessibility and user experience for
 keyboard-only users.
+
+New methods implemented:
+- `handleKeyDown()`
+- `selectOption()`
+- `closeDropdown()`
+
+Event listeners added for `keydown` events on `dropdown-container`.
 ```
 
-### Breaking Change
+### Breaking Change with Technical Details
 
 ```
 refactor(core): rename configuration options #200 !300
@@ -204,15 +261,18 @@ BREAKING CHANGE: Configuration options have been renamed for clarity:
 - `maxItems` is now `maxLimit`
 - `showAll` is now `displayAll`
 
-Update your configuration files accordingly.
+Update your `config.json` files accordingly.
+The `initConfig()` function signature has changed.
 ```
 
-### Multiple Issues
+### Multiple Issues with Technical Context
 
 ```
-fix(parser): handle malformed JSON input #123 !456
+fix(parser): handle malformed `JSON` input #123 !456
 
-Add validation to prevent crashes when parsing invalid JSON data.
+Add validation to prevent crashes when parsing invalid `JSON` data.
+The `parseData()` function now uses `try-catch` blocks and returns
+`null` for invalid inputs.
 
 Fixes #123
 Closes #456
@@ -231,6 +291,12 @@ Closes #456
 5. **Reference Issues**: Link to relevant issues, PRs, or tickets.
 
 6. **Atomic Commits**: Each commit should represent one logical change.
+
+7. **Format Technical Terms**: Always wrap technical elements with backticks for clarity.
+
+8. **Consistent Formatting**: Apply the same formatting rules across all commits.
+
+9. **Professional Language**: Use precise technical terminology appropriate for the domain.
 
 ## Tools Integration
 
