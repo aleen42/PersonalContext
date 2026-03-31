@@ -1,0 +1,23 @@
+{
+  "skill_name": "workspace-context-analyzer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just cloned a repository and need to understand what kind of project this is. Can you analyze the workspace and tell me what I'm looking at?",
+      "expected_output": "A comprehensive analysis of the project structure, identifying the main technologies, frameworks, and architectural patterns used in the codebase.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I need to do a code review for a pull request but I'm not familiar with this codebase. Help me understand the project context first.",
+      "expected_output": "An analysis that identifies key components, entry points, and architectural patterns to help prepare for code review.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "We're planning to migrate this project to a new framework. What do I need to know about the current tech stack and dependencies?",
+      "expected_output": "A detailed breakdown of the current technology stack, dependencies, and potential migration challenges.",
+      "files": []
+    }
+  ]
+}
