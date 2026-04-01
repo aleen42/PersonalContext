@@ -68,11 +68,14 @@ Please follow these rules strictly when generating or modifying code in this pro
 - **Syntax**: Use **Less** for styling.
 - **Naming**: Follow **BEM** (Block Element Modifier) naming convention.
     * Example: `.block__element--modifier`
+- **Responsive Design**: Understand Figma design specifications and implement adaptive layouts.
+- **Adaptive Implementation**: For adaptive layouts, use px for margin, padding, and other box model properties to maintain consistent spacing. Only width properties should try to use adaptive units (like percentages), while other dimensions should use fixed px values to ensure proper spacing and alignment.
 
 ## HTML / JSP
 
 - **Indentation**: Use **4 spaces**.
 - **Attributes**: Use double quotes (`"`) for attribute values.
+- **Attribute Quotes**: Minimize double quotes for `class` attributes and other attributes where possible.
 
 ## Markdown
 
