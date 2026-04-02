@@ -122,25 +122,51 @@ function copySingleSkill(srcSkillDir, skillFolderName, prefix) {
     }
 
     // Get skill name from SKILL.md
-    const skillName = getSkillName(finalTargetDir);
-    const displayName = skillName || skillFolderName;
-
     return {
-        name : skillFolderName,
-        displayName,
+        name        : skillFolderName,
+        displayName : getSkillName(finalTargetDir) || skillFolderName,
+    };
+}
+
+/**
+ * Copy a single file from source to target directory
+ * @param {string} srcFilePath - Source file path
+ * @param {string} targetDirName - Name for the target directory
+ * @param {string} fileName - Name of the file to copy
+ * @param {string} prefix - Prefix to add to directory name
+ * @returns {{name: string, displayName: string}|null} - Skill info or null
+ */
+function copySingleFile(srcFilePath, targetDirName, fileName, prefix) {
+    const finalTargetDir = path.join(SKILLS_DIR, targetDirName);
+    const finalTargetFilePath = path.join(finalTargetDir, fileName);
+
+    // Create target directory if non existed
+    fs.existsSync(finalTargetDir) || fs.mkdirSync(finalTargetDir, {recursive : true});
+
+    // Copy the file to target directory
+    fs.copyFileSync(srcFilePath, finalTargetFilePath);
+
+    // Update skill name in SKILL.md with prefix
+    if (prefix) {
+        updateSkillNameWithPrefix(finalTargetDir, prefix);
+    }
+
+    // For files, we use the directory name as display name
+    return {
+        name        : targetDirName,
+        displayName : targetDirName,
     };
 }
 
 /**
  * Copy skill(s) from a git repository
  * @param {string} url - Git repository URL
- * @param {string} srcPath - Path to skill directory (use 'skills/*' for all skills)
+ * @param {string|string[]} srcPath - Path(s) to skill directory or file (use 'skills/*' for all skills)
  * @param {string} prefix - Prefix for target directory name
  */
-export default (url, srcPath, prefix = path.basename(srcPath)) => {
+export default (url, srcPath, prefix) => {
+    // Original single path logic (existing implementation)
     const TEMP_DIR = path.join(__dirname, '.temp-skills-repo');
-    const isWildcard = srcPath.endsWith('/*');
-    const basePath = isWildcard ? srcPath.slice(0, -2) : srcPath;
 
     console.log(`Installing skills from ${url}...`);
 
@@ -154,37 +180,54 @@ export default (url, srcPath, prefix = path.basename(srcPath)) => {
             stdio : 'inherit'
         });
 
-        // Checkout the skill directory(ies)
-        console.log(`Extracting ${srcPath} directory...`);
-        execSync(`git -C ${TEMP_DIR} sparse-checkout set ${basePath}`, {
-            stdio : 'inherit'
-        });
-
         const copiedSkills = [];
 
-        if (isWildcard) {
-            // Copy all subdirectories from the base path
-            const srcBaseDir = path.join(TEMP_DIR, basePath);
-            if (fs.existsSync(srcBaseDir)) {
-                const entries = fs.readdirSync(srcBaseDir, {withFileTypes : true});
-                for (const entry of entries) {
-                    if (entry.isDirectory()) {
-                        const skillDir = path.join(srcBaseDir, entry.name);
-                        const skillFolderName = `${prefix}-${entry.name}`;
-                        const skillInfo = copySingleSkill(skillDir, skillFolderName, prefix);
-                        if (skillInfo) {
-                            copiedSkills.push(skillInfo);
+        // Process each path in the array
+        for (const singlePath of [].concat(srcPath)) {
+            const isWildcard = singlePath.endsWith('/*');
+            const isFile = !singlePath.endsWith('/') && !isWildcard && path.extname(singlePath) !== '';
+            const basePath = isWildcard ? singlePath.slice(0, -2) : (isFile ? path.dirname(singlePath) : singlePath);
+
+            // Checkout the skill directory(ies)
+            console.log(`Extracting ${basePath}...`);
+            execSync(`git -C ${TEMP_DIR} sparse-checkout set ${basePath}`, {
+                stdio : 'inherit'
+            });
+
+            if (isWildcard) {
+                // Copy all subdirectories from the base path
+                const srcBaseDir = path.join(TEMP_DIR, basePath);
+                if (fs.existsSync(srcBaseDir)) {
+                    const entries = fs.readdirSync(srcBaseDir, {withFileTypes : true});
+                    for (const entry of entries) {
+                        if (entry.isDirectory()) {
+                            const skillDir = path.join(srcBaseDir, entry.name);
+                            const skillFolderName = prefix ? `${prefix}-${entry.name}` : entry.name;
+                            const skillInfo = copySingleSkill(skillDir, skillFolderName, prefix);
+                            if (skillInfo) {
+                                copiedSkills.push(skillInfo);
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            // Copy a single skill
-            const srcSkillDir = path.join(TEMP_DIR, srcPath);
-            const skillFolderName = prefix.includes('-') ? prefix : `${prefix}-${path.basename(srcPath)}`;
-            const skillInfo = copySingleSkill(srcSkillDir, skillFolderName, prefix);
-            if (skillInfo) {
-                copiedSkills.push(skillInfo);
+            } else if (isFile) {
+                // Copy a single file
+                const srcFilePath = path.join(TEMP_DIR, singlePath);
+                const fileName = path.basename(singlePath);
+                const skillName = path.basename(url).replace(/\.git$/, '');
+                const targetDirName = prefix ? `${prefix}-${skillName}` : skillName;
+                const skillInfo = copySingleFile(srcFilePath, targetDirName, fileName, prefix);
+                if (skillInfo) {
+                    copiedSkills.push(skillInfo);
+                }
+            } else {
+                // Copy a single skill directory
+                const srcSkillDir = path.join(TEMP_DIR, singlePath);
+                const skillFolderName = prefix.includes('-') ? prefix : `${prefix}-${path.basename(singlePath)}`;
+                const skillInfo = copySingleSkill(srcSkillDir, skillFolderName, prefix);
+                if (skillInfo) {
+                    copiedSkills.push(skillInfo);
+                }
             }
         }
 
