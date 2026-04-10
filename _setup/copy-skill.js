@@ -14,8 +14,8 @@ const INDEX_MD_PATH = path.join(SKILLS_DIR, 'index.md');
  * @param {string} dest - Destination directory
  */
 function copyDir(src, dest) {
-    fs.mkdirSync(dest, {recursive : true});
-    const entries = fs.readdirSync(src, {withFileTypes : true});
+    fs.mkdirSync(dest, {recursive: true});
+    const entries = fs.readdirSync(src, {withFileTypes: true});
 
     for (const entry of entries) {
         const srcPath = path.join(src, entry.name);
@@ -35,7 +35,7 @@ function copyDir(src, dest) {
  */
 function removeDir(dir) {
     if (fs.existsSync(dir)) {
-        fs.rmSync(dir, {recursive : true, force : true});
+        fs.rmSync(dir, {recursive: true, force: true});
     }
 }
 
@@ -100,6 +100,22 @@ function appendToIndexMd(skills, prefix) {
 }
 
 /**
+ * Clear all generated external skill entries from skills/index.md
+ */
+function clearExternalIndexSection() {
+    if (fs.existsSync(INDEX_MD_PATH)) {
+        const content = fs.readFileSync(INDEX_MD_PATH, 'utf-8');
+        const externalHeading = '\n### External';
+        const externalHeadingIndex = content.indexOf(externalHeading);
+
+        if (externalHeadingIndex > -1) {
+            const nextContent = `${content.slice(0, externalHeadingIndex + externalHeading.length)}\n`;
+            fs.writeFileSync(INDEX_MD_PATH, nextContent);
+        }
+    }
+}
+
+/**
  * Copy a single skill from source to target
  * @param {string} srcSkillDir - Source skill directory
  * @param {string} skillFolderName - Name for the skill folder
@@ -123,8 +139,8 @@ function copySingleSkill(srcSkillDir, skillFolderName, prefix) {
 
     // Get skill name from SKILL.md
     return {
-        name        : skillFolderName,
-        displayName : getSkillName(finalTargetDir) || skillFolderName,
+        name: skillFolderName,
+        displayName: getSkillName(finalTargetDir) || skillFolderName,
     };
 }
 
@@ -141,7 +157,7 @@ function copySingleFile(srcFilePath, targetDirName, fileName, prefix) {
     const finalTargetFilePath = path.join(finalTargetDir, fileName);
 
     // Create target directory if non existed
-    fs.existsSync(finalTargetDir) || fs.mkdirSync(finalTargetDir, {recursive : true});
+    fs.existsSync(finalTargetDir) || fs.mkdirSync(finalTargetDir, {recursive: true});
 
     // Copy the file to target directory
     fs.copyFileSync(srcFilePath, finalTargetFilePath);
@@ -153,8 +169,8 @@ function copySingleFile(srcFilePath, targetDirName, fileName, prefix) {
 
     // For files, we use the directory name as display name
     return {
-        name        : targetDirName,
-        displayName : targetDirName,
+        name: targetDirName,
+        displayName: targetDirName,
     };
 }
 
@@ -171,16 +187,19 @@ export default (url, srcPath, prefix) => {
     console.log(`Installing skills from ${url}...`);
 
     try {
+        clearExternalIndexSection();
+
         // Clean up any existing temp directory
         removeDir(TEMP_DIR);
 
         // Clone the repository
         console.log('Cloning repository...');
         execSync(`git clone --depth 1 --filter=blob:none --sparse ${url} ${TEMP_DIR}`, {
-            stdio : 'inherit'
+            stdio: 'inherit'
         });
 
         const copiedSkills = [];
+        const addCopy = skillInfo => skillInfo && !copiedSkills.find(s => s.name === skillInfo.name) && copiedSkills.push(skillInfo);
 
         // Process each path in the array
         for (const singlePath of [].concat(srcPath)) {
@@ -191,50 +210,34 @@ export default (url, srcPath, prefix) => {
             // Checkout the skill directory(ies)
             console.log(`Extracting ${basePath}...`);
             execSync(`git -C ${TEMP_DIR} sparse-checkout set ${basePath}`, {
-                stdio : 'inherit'
+                stdio: 'inherit'
             });
 
             if (isWildcard) {
                 // Copy all subdirectories from the base path
                 const srcBaseDir = path.join(TEMP_DIR, basePath);
                 if (fs.existsSync(srcBaseDir)) {
-                    const entries = fs.readdirSync(srcBaseDir, {withFileTypes : true});
+                    const entries = fs.readdirSync(srcBaseDir, {withFileTypes: true});
                     for (const entry of entries) {
                         if (entry.isDirectory()) {
-                            const skillDir = path.join(srcBaseDir, entry.name);
-                            const skillFolderName = prefix ? `${prefix}-${entry.name}` : entry.name;
-                            const skillInfo = copySingleSkill(skillDir, skillFolderName, prefix);
-                            if (skillInfo) {
-                                copiedSkills.push(skillInfo);
-                            }
+                            addCopy(copySingleSkill(path.join(srcBaseDir, entry.name), prefix ? `${prefix}-${entry.name}` : entry.name, prefix));
                         }
                     }
                 }
             } else if (isFile) {
                 // Copy a single file
-                const srcFilePath = path.join(TEMP_DIR, singlePath);
-                const fileName = path.basename(singlePath);
                 const skillName = path.basename(url).replace(/\.git$/, '');
-                const targetDirName = prefix ? `${prefix}-${skillName}` : skillName;
-                const skillInfo = copySingleFile(srcFilePath, targetDirName, fileName, prefix);
-                if (skillInfo) {
-                    copiedSkills.push(skillInfo);
-                }
+                addCopy(copySingleFile(path.join(TEMP_DIR, singlePath), prefix ? `${prefix}-${skillName}` : skillName, path.basename(singlePath), prefix))
             } else {
                 // Copy a single skill directory
-                const srcSkillDir = path.join(TEMP_DIR, singlePath);
-                const skillFolderName = prefix.includes('-') ? prefix : `${prefix}-${path.basename(singlePath)}`;
-                const skillInfo = copySingleSkill(srcSkillDir, skillFolderName, prefix);
-                if (skillInfo) {
-                    copiedSkills.push(skillInfo);
-                }
+                addCopy(copySingleSkill(path.join(TEMP_DIR, singlePath), prefix.includes('-') ? prefix : `${prefix}-${path.basename(singlePath)}`, prefix));
             }
         }
 
         // Append to index.md
         if (copiedSkills.length > 0) {
             console.log('Appending to skills/index.md...');
-            appendToIndexMd(copiedSkills, prefix);
+            appendToIndexMd(copiedSkills, prefix || 'others');
         }
 
         // Clean up temp directory
