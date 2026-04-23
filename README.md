@@ -10,7 +10,7 @@ A repository for personal specific documentation formats that help AI agents (An
 
 #### General (Claude, Codex, & Others)
 
-- [x] [**`RULES.md`**](./RULES.md): Explicit coding rules, patterns, and constraints. It is also known as `AGENTS.md` in Cursor, while `CALUDE.md` in Calude Code.
+- [x] [**`RULES.md`**](./RULES.md): Explicit coding rules, patterns, and constraints. It is also known as `AGENTS.md` in Cursor, while `CLAUDE.md` in Claude Code.
 - [ ] **`llms.txt`**: A summarized context file optimized for LLM consumption (emerging standard).
 - [x] [**`.editorconfig`**](./.editorconfig): Enforces coding style (indentation, line endings) which AI models typically respect.
 
