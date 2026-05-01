@@ -30,7 +30,13 @@ Apply this skill by default before finalizing any code change, even when the use
 5. Optimize for scanability.
    A reader should understand the control flow without jumping between multiple tiny helpers.
 
-6. Prefer a single expression for small return-only branches.
+6. Prefer expression-bodied arrows for return-only callbacks.
+   When an arrow callback only returns one expression, remove braces and `return`; for multi-line expressions, break immediately after `=>` and indent the returned expression one level so the expression remains the visual focus.
+
+7. Prefer short-circuit expressions for truthy-or-null choices.
+   When an expression only chooses between a value and `null`, prefer `condition && value` over `condition ? value : null`.
+
+8. Prefer a single expression for small return-only branches.
    When a function only selects one value from a short ordered set of conditions, prefer a ternary expression over multiple `if` returns, as long as the result is still easy to scan top-to-bottom.
 
 ## Refactor Order
