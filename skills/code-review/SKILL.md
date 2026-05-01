@@ -29,7 +29,10 @@ Review with the following order of attention:
 6. Maintainability issues only when they create real risk
 
 Do not spend most of the review on style nits unless the user explicitly asks for style review.
+
 Do not drift into implementation unless the user also asks for changes.
+
+When reviewing defensive checks, trace the control flow and data loop that reaches them. If earlier invariants, loop conditions, or caller contracts already make a guard unreachable or redundant, prefer pointing out the unnecessary defensive branch and its maintenance cost instead of preserving it by default.
 
 ## Review Workflow
 
