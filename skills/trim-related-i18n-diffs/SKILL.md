@@ -18,6 +18,39 @@ Typical requests:
 
 Turn a noisy set of uncommitted i18n edits into a focused diff that keeps only the changes that are semantically tied to a baseline file's real modifications.
 
+## Quick Start — Automated Script
+
+A shell script automates steps 1-5 of the workflow below. Run it directly:
+
+```bash
+# Resolve paths relative to the repo root
+SKILL_DIR="<skill-directory>"
+
+# Auto-discover all modified sibling .js files
+bash "$SKILL_DIR/trim-i18n-diffs.sh" path/to/lang_zh_CN.js abc123..HEAD
+
+# Or pass explicit target files
+bash "$SKILL_DIR/trim-i18n-diffs.sh" path/to/lang_zh_CN.js abc123..HEAD \
+    path/to/lang_ja.js path/to/lang_ko.js
+```
+
+The script will:
+
+1. Extract changed keys from the baseline diff
+2. Auto-discover modified sibling `.js` files (or use explicit targets)
+3. Trim each target: keep only uncommitted edits for relevant keys, revert everything else to HEAD
+4. Print a summary of trimmed files and remaining diff stats
+
+After the script finishes, proceed to **Verify the trimmed result** (step 6 below).
+
+To verify that the remaining diff only touches relevant keys, run:
+
+```bash
+bash "$SKILL_DIR/verify-trim.sh" path/to/lang_zh_CN.js abc123..HEAD
+```
+
+The script exits `0` when every target file is clean and exits `1` if unexpected keys are found.
+
 ## Inputs To Identify
 
 Gather these inputs before editing:
@@ -142,9 +175,7 @@ The remaining hunks should only touch keys from the relevant key set. If unrelat
 
 ## Practical Strategy
 
-For many sibling language files, scripting the trim is safer than manual editing.
-
-A reliable approach is:
+For many sibling language files, scripting the trim is safer than manual editing. Use the provided `trim-i18n-diffs.sh` script when possible. If manual editing is needed, a reliable approach is:
 
 1. Extract relevant keys from the baseline range diff
 2. Read each target file from `HEAD`
