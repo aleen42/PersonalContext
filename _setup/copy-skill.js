@@ -235,6 +235,30 @@ function copySingleFile(srcFilePath, targetDirName, fileName, prefix) {
 }
 
 /**
+ * Copy a directory path into a target skill directory
+ * @param {string} srcDirPath - Source directory path
+ * @param {string} targetDirName - Name for the target skill directory
+ * @param {string} relativeDirPath - Relative directory path to preserve
+ * @param {string} prefix - Prefix to add to skill name in SKILL.md
+ * @returns {{name: string, displayName: string}|null} - Skill info or null
+ */
+function copyDirectoryPath(srcDirPath, targetDirName, relativeDirPath, prefix) {
+    const finalTargetDir = path.join(SKILLS_DIR, targetDirName);
+    const finalTargetDirPath = path.join(finalTargetDir, relativeDirPath);
+
+    copyDir(srcDirPath, finalTargetDirPath);
+
+    if (prefix) {
+        updateSkillNameWithPrefix(finalTargetDir, prefix);
+    }
+
+    return {
+        name        : targetDirName,
+        displayName : getSkillName(finalTargetDir) || targetDirName,
+    };
+}
+
+/**
  * Copy skill(s) from a git repository
  * @param {string} url - Git repository URL
  * @param {string|string[]} srcPath - Path(s) to skill directory or file (use 'skills/*' for all skills)
@@ -243,6 +267,7 @@ function copySingleFile(srcFilePath, targetDirName, fileName, prefix) {
 export default (url, srcPath, prefix) => {
     // Original single path logic (existing implementation)
     const TEMP_DIR = path.join(__dirname, '.temp-skills-repo');
+    const isPathList = Array.isArray(srcPath);
 
     prefixes.push(prefix);
 
@@ -255,7 +280,7 @@ export default (url, srcPath, prefix) => {
         // Clone the repository
         console.log('Cloning repository...');
         execSync(`git clone --depth 1 --filter=blob:none --sparse ${url} ${TEMP_DIR}`, {
-            stdio : 'inherit'
+            stdio : 'inherit',
         });
 
         const copiedSkills = [];
@@ -272,7 +297,7 @@ export default (url, srcPath, prefix) => {
             // Checkout the skill directory(ies)
             console.log(`Extracting ${basePath}...`);
             execSync(`git -C ${TEMP_DIR} sparse-checkout set ${basePath}`, {
-                stdio : 'inherit'
+                stdio : 'inherit',
             });
 
             if (isWildcard) {
@@ -289,7 +314,11 @@ export default (url, srcPath, prefix) => {
             } else if (isFile) {
                 // Copy a single file
                 const skillName = path.basename(url).replace(/\.git$/, '');
-                addCopy(copySingleFile(path.join(TEMP_DIR, singlePath), prefix ? `${prefix}-${skillName}` : skillName, path.basename(singlePath), prefix))
+                addCopy(copySingleFile(path.join(TEMP_DIR, singlePath), prefix ? `${prefix}-${skillName}` : skillName, path.basename(singlePath), prefix));
+            } else if (isPathList) {
+                // Copy a directory path into the repository-named skill directory
+                const skillName = path.basename(url).replace(/\.git$/, '');
+                addCopy(copyDirectoryPath(path.join(TEMP_DIR, singlePath), prefix ? `${prefix}-${skillName}` : skillName, singlePath, prefix));
             } else {
                 // Copy a single skill directory
                 addCopy(copySingleSkill(path.join(TEMP_DIR, singlePath), prefix.includes('-') ? prefix : `${prefix}-${path.basename(singlePath)}`, prefix));
