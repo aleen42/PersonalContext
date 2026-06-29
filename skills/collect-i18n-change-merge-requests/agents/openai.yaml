@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collect I18n Change MRs"
+  short_description: "Collect !MR ids and files for i18n changes"
+  default_prompt: "Use $collect-i18n-change-merge-requests to collect strict whitespace-prefixed !MR ids for i18n changes in a git commit."
