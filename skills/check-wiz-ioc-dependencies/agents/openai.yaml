@@ -1,0 +1,6 @@
+interface:
+  display_name: "Check Wiz IOC Dependencies"
+  short_description: "Scan Node deps against Wiz IOCs"
+  default_prompt: "Use $check-wiz-ioc-dependencies to scan this repository against the latest Wiz IOC CSV."
+policy:
+  allow_implicit_invocation: true
