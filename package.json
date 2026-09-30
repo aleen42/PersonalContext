@@ -1,0 +1,8 @@
+{
+  "name"    : "@aleen42/personal-context",
+  "type"    : "module",
+  "scripts" : {
+    "postinstall" : "node _setup/index.js"
+  },
+  "license" : "MIT"
+}

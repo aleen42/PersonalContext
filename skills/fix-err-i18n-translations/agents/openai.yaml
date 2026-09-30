@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fix Err I18n Translations"
+  short_description: "Retranslate marked i18n error lines safely"
+  default_prompt: "Use $fix-err-i18n-translations to retranslate <err>-marked i18n resources from the zh_CN baseline."

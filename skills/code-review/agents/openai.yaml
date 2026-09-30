@@ -1,0 +1,7 @@
+interface:
+  display_name: "Code Review"
+  short_description: "Review diffs and commits for bugs, regressions, and test gaps"
+  default_prompt: "Use $code-review to review the relevant changes, prioritize concrete findings about correctness and regressions, and keep summaries brief."
+
+policy:
+  allow_implicit_invocation: true
