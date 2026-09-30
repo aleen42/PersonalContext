@@ -15,6 +15,7 @@ Use the bundled script for this task. It codifies the fragile parts of the workf
 * For other translation resources, extract changed new-file line numbers from the target commit's diff.
 * Map each representative file to the matching `*_zh_CN.<ext>` or `zh-CN.js` baseline.
 * Use `git blame` on each changed key or changed line in the baseline file to find the source commit for that text.
+* When the user supplies a source commit interval, analyze the latest translation commit first and limit those blamed source commits with `--source-range`; the interval is not the translation commit to analyze.
 * Extract only merge request ids matching strict whitespace-prefixed `!123` with `(?<=\s)!\d+`.
 * Exclude repository-qualified ids such as `wmweb!1025`.
 * Output both file-group to id mappings and id to changed-file-group mappings.
@@ -29,6 +30,12 @@ Run from the git repository root:
 python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_mrs.py HEAD
 ```
 
+When a latest translation commit must be traced only to source commits in a given range, keep the two inputs separate:
+
+```bash
+python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_mrs.py HEAD --source-range <base>..<tip>
+```
+
 Useful options:
 
 ```bash
@@ -36,10 +43,11 @@ python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_
 python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_mrs.py <commit> --no-groups
 python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_mrs.py <commit> --locales ar,ja,ko,vi
 python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_mrs.py <commit> --extensions properties,js,jsp,letter,eml,html,cf,txt
+python3 /path/to/collect-i18n-change-merge-requests/scripts/collect_i18n_change_mrs.py <translation-commit> --source-range <base>..<tip> --json
 ```
 
 ## Reporting
 
-Report the total deduplicated ids first, then include the corresponding changed file groups for each id. State the commit analyzed and the strict extraction rule. If the script reports missing baseline keys, include that as residual risk rather than inventing ids from full file history.
+Report the total deduplicated ids first, then include the corresponding changed file groups for each id. State the translation commit analyzed, any source range applied, and the strict extraction rule. If the script reports missing baseline keys, include that as residual risk rather than inventing ids from full file history.
 
 Use the script output as the source of truth. Do not fall back to `git log -- <file>` for the whole file unless the user explicitly asks for full-file history.

@@ -189,6 +189,11 @@ def commit_message(commit: str) -> str:
     return run_git(['show', '-s', '--format=%B', commit])
 
 
+def revision_range_commits(revision_range: str) -> set[str]:
+    output = run_git(['rev-list', '--abbrev-commit', '--abbrev=12', revision_range])
+    return set(output.splitlines())
+
+
 def unique_sorted_ids(ids: list[str]) -> list[str]:
     return sorted(set(ids), key=lambda value: int(value[1:]))
 
@@ -204,8 +209,14 @@ def files_by_id(results: list[GroupResult]) -> dict[str, list[str]]:
     }
 
 
-def collect(commit: str, locales: tuple[str, ...], extensions: tuple[str, ...]) -> tuple[list[GroupResult], list[str]]:
+def collect(
+    commit: str,
+    locales: tuple[str, ...],
+    extensions: tuple[str, ...],
+    source_range: str | None = None,
+) -> tuple[list[GroupResult], list[str]]:
     groups = group_language_files(changed_files(commit), locales, extensions)
+    source_commits = revision_range_commits(source_range) if source_range else None
     results: list[GroupResult] = []
     all_ids: list[str] = []
 
@@ -239,6 +250,9 @@ def collect(commit: str, locales: tuple[str, ...], extensions: tuple[str, ...]) 
                 blamed = blame_commit(source, line)
                 if blamed and blamed not in commits:
                     commits.append(blamed)
+
+        if source_commits is not None:
+            commits = [blamed for blamed in commits if blamed in source_commits]
 
         ids: list[str] = []
         for blamed in commits:
@@ -274,6 +288,10 @@ def parse_args() -> argparse.Namespace:
         default=','.join(DEFAULT_EXTENSIONS),
         help='Comma-separated file extensions to treat as translated resources.',
     )
+    parser.add_argument(
+        '--source-range',
+        help='Git revision range that limits blamed Chinese source commits, for example base..HEAD.',
+    )
     parser.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
     parser.add_argument('--no-groups', action='store_true', help='Only print the final deduplicated id list.')
     return parser.parse_args()
@@ -283,12 +301,13 @@ def main() -> int:
     args = parse_args()
     locales = tuple(locale.strip() for locale in args.locales.split(',') if locale.strip())
     extensions = tuple(extension.strip().lstrip('.') for extension in args.extensions.split(',') if extension.strip())
-    results, all_ids = collect(args.commit, locales, extensions)
+    results, all_ids = collect(args.commit, locales, extensions, args.source_range)
     id_files = files_by_id(results)
 
     if args.json:
         payload = {
             'commit' : args.commit,
+            'source_range' : args.source_range,
             'strict_pattern' : r'(?<=\s)!\d+',
             'ids' : all_ids,
             'count' : len(all_ids),
